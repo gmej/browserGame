@@ -1,4 +1,6 @@
-<canvas id='ctx' width="500" height="500" style="border: 1px solid black"></canvas>
+<canvas id='ctx' width="500" height="500" style="border: 1px solid black"></canvas> <br>
+You are number:<p id="number">
+</p>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js'></script>
 <script>
     var ctx = document.getElementById('ctx').getContext('2d');
@@ -10,11 +12,21 @@
             reason: 'just because'
         });
     }
+    let counter = 0;
+    socket.once('clientConfiguration', conf => {
+        console.log(counter++);
+        console.log(conf);
+        document.getElementById("number").innerHTML = conf.number; 
+    })
 
     socket.on('newPosition', function (data) {
         ctx.clearRect(0, 0, 500, 500);
-        for (var i = 0; i < data.length; i++) {
-            ctx.fillText(data[i].number, data[i].x, data[i].y);
+        for (var i = 0; i < data.player.length; i++) {
+            ctx.fillText(data.player[i].number, data.player[i].x, data.player[i].y);
+        }
+
+        for (var i = 0; i < data.bullet.length; i++) {
+            ctx.fillRect(data.bullet[i].x, data.bullet[i].y - 5, 10, 10);
         }
     });
 
@@ -22,15 +34,15 @@
         if (event.keyCode === 68) { //d 
             console.log('d');
             socket.emit('keyPress', { inputId: 'right', state: true });
-        } 
+        }
         if (event.keyCode === 83) { //s
             console.log('s');
             socket.emit('keyPress', { inputId: 'down', state: true });
-        } 
-        if (event.keyCode === 65)  {//a
+        }
+        if (event.keyCode === 65) {//a
             console.log('a');
             socket.emit('keyPress', { inputId: 'left', state: true });
-        } 
+        }
         if (event.keyCode === 87) { //w
             console.log('w');
             socket.emit('keyPress', { inputId: 'up', state: true });

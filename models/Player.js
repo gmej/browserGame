@@ -35,6 +35,7 @@ class Player extends Entity {
     updatePlayer() {
         this.updateSpeed();
         super.updateEntity();
+        return this;
     }
 
 
@@ -51,6 +52,11 @@ Player.onConnect = function (socket) {
 
     var player = new Player(socket.id);
 
+    let clientConfiguration = {
+        number: player.number,
+        otro: 'jejejeje'
+    }
+    socket.emit('clientConfiguration', clientConfiguration);
     socket.on('keyPress', data => {
         if (data.inputId == 'left')
             player.pressingLeft = data.state;
