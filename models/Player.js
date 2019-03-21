@@ -10,7 +10,6 @@ class Player extends Entity {
         this.pressingUp = false;
         this.maxSpeed = 10;
         Player.list[id] = this;
-        console.log('Player saved in Player.list: ', Player.list);
     }
 
 

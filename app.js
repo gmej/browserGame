@@ -30,6 +30,16 @@ io.sockets.on('connection', socket => {
         delete SOCKET_LIST[socket.id];
         Player.onDisconnect(socket);
     });
+
+    socket.on('sendMsgToServer', data => {
+        console.log('data', data);
+        console.log('recieved sendMsgToServer');
+        console.log(`[CHAT] ${data.id} says: ${data.msg}`);
+        var playerName = "" + data.id;
+        for(let i in SOCKET_LIST) {
+            SOCKET_LIST[i].emit('addToChat', playerName + ': ' + data.msg);
+        }
+    });
     
 
 });

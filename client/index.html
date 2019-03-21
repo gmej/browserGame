@@ -1,10 +1,22 @@
 <canvas id='ctx' width="500" height="500" style="border: 1px solid black"></canvas> <br>
 You are number:<p id="number">
 </p>
+<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+    <div>Chat</div>
+</div>
+
+<form id="chat-form" autocomplete="off">
+    <input id="chat-input" type="text"   style="width: 500px"></input>
+</form>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js'></script>
 <script>
+    var chatText = document.getElementById('chat-text');
+    var chatInput = document.getElementById('chat-input');
+    var chatForm = document.getElementById('chat-form');
+    var numPlayer = document.getElementById('number');
     var ctx = document.getElementById('ctx').getContext('2d');
     ctx.font = '30px Arial';
+
     var socket = io();
 
     var happy = function () {
@@ -16,7 +28,7 @@ You are number:<p id="number">
     socket.once('clientConfiguration', conf => {
         console.log(counter++);
         console.log(conf);
-        document.getElementById("number").innerHTML = conf.number; 
+        document.getElementById("number").innerHTML = conf.number;
     })
 
     socket.on('newPosition', function (data) {
@@ -30,21 +42,32 @@ You are number:<p id="number">
         }
     });
 
+    socket.on('addToChat', data => {
+        chatText.innerHTML += '<div>' + data + '</div>';
+    });
+
+    chatForm.onsubmit = function(event) {
+        console.log('onsubmit');
+        event.preventDefault();
+        let packet = {
+            msg: chatInput.value,
+            id: numPlayer.innerHTML
+        };
+        socket.emit('sendMsgToServer', packet);
+        chatInput.value = '';
+    }
+
     document.onkeydown = function (event) {
         if (event.keyCode === 68) { //d 
-            console.log('d');
             socket.emit('keyPress', { inputId: 'right', state: true });
         }
         if (event.keyCode === 83) { //s
-            console.log('s');
             socket.emit('keyPress', { inputId: 'down', state: true });
         }
         if (event.keyCode === 65) {//a
-            console.log('a');
             socket.emit('keyPress', { inputId: 'left', state: true });
         }
         if (event.keyCode === 87) { //w
-            console.log('w');
             socket.emit('keyPress', { inputId: 'up', state: true });
         }
     }
