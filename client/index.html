@@ -1,15 +1,49 @@
-<canvas id='ctx' width="1000" height="500" style="border: 1px solid black"></canvas> <br>
-You are number:<p id="number">
-</p>
-<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
-    <div>Chat</div>
+<!-- LOGIN-->
+
+<div id="loginDiv">
+    Username: <input id="loginDiv-username" type="text"></input><br>
+    Password: <input id="loginDiv-password" type="password"></input>
+    <button id="loginDiv-logIn">Log in</button>
+    <button id="loginDiv-SignUp">Sign up</button>
 </div>
 
-<form id="chat-form" autocomplete="off">
-    <input id="chat-input" type="text" style="width: 500px"></input>
-</form>
+<!-- GAME-->
+<div id="gameDiv" style="display: none ">
+    <canvas id='ctx' width="1000" height="500" style="border: 1px solid black"></canvas> <br>
+    <p id="number"></p>
+    <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+        <div>Chat</div>
+    </div>
+
+    <form id="chat-form" autocomplete="off">
+        <input id="chat-input" type="text" style="width: 500px"></input>
+    </form>
+</div>
+
+<!-- TODO-->
+
+<div id="alertsDiv" style="display: none ; border: orangered; "></div>
+<!-- en vez de usar alert(), usaremos un div para las alertas:
+    Avisar de lo que sea
+    El resto más oscuro 
+-->
+
+
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js'></script>
 <script>
+
+    var socket = io();
+    let selfPlayer = {};
+
+    //login
+    var loginDiv = document.getElementById('loginDiv');
+    var loginDivUsername = document.getElementById('loginDiv-username');
+    var loginDivPassword = document.getElementById('loginDiv-password');
+    var loginDivLogIn = document.getElementById('loginDiv-logIn');
+    var loginDivSignUp = document.getElementById('loginDiv-SignUp');
+
+    //game
+    var gameDiv = document.getElementById('gameDiv');
     var chatText = document.getElementById('chat-text');
     var chatInput = document.getElementById('chat-input');
     var chatForm = document.getElementById('chat-form');
@@ -21,8 +55,38 @@ You are number:<p id="number">
     const CANVAS_HEIGTH = 500;
 
 
-    var socket = io();
-    let selfPlayer = {};
+    loginDivLogIn.onclick = function () {
+        socket.emit('logIn', {
+            username: loginDivUsername.value,
+            password: loginDivPassword.value
+        });
+    }
+
+    loginDivSignUp.onclick = function () {
+        socket.emit('signUp', {
+            username: loginDivUsername.value,
+            password: loginDivPassword.value
+        });
+    }
+
+    socket.on('logInResponse', data => {
+        if (data.success) {
+            loginDiv.style.display = 'none';
+            gameDiv.style.display = 'inline-block';
+        } else {
+            alert('Log in unsuccesful')
+        }
+    });
+
+    socket.on('signUpResponse', data => {
+        if (data.success) {
+            alert('Sign up succesful! :)')
+        } else {
+            alert('Sign up unsuccesful')
+        }
+    });
+
+
 
 
     var happy = function () {
@@ -34,7 +98,7 @@ You are number:<p id="number">
     socket.once('clientConfiguration', conf => {
         console.log(counter++);
         console.log(conf);
-        document.getElementById("number").innerHTML = conf.number;
+        document.getElementById("number").innerHTML = 'You are number: ' + conf.number;
         selfPlayer.number = conf.number;
         console.log('selfPlayer.number :', selfPlayer.number);
     })
