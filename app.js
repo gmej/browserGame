@@ -31,16 +31,22 @@ let USERS = {
 let isValidPassword = function (data) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve(USERS[data.username] === data.password);
-        }, 1000);
+            if (USERS[data.username] === data.password)
+                resolve();
+            else
+                reject();
+        }, 500);
     });
 }
 
 let isUsernameTaken = function (data) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve(USERS[data.username]);
-        }, 1000);
+            if (USERS[data.username])
+                resolve();
+            else
+                reject();
+        }, 500);
     });
 }
 
@@ -59,14 +65,15 @@ io.sockets.on('connection', socket => {
     console.log('client connected: ', socket.id);
 
     socket.on('logIn', data => {
-        isValidPassword(data).then((result) => {
-            Player.onConnect(socket);
-            socket.emit('logInResponse', { success: true });
-            console.log('Client logged in');
-        }).catch((err) => {
+        isValidPassword(data)
+            .then((result) => {
+                Player.onConnect(socket);
+                socket.emit('logInResponse', { success: true });
+                console.log('Client logged in');
+            }).catch((err) => {
 
-            socket.emit('logInResponse', { success: false });
-        });
+                socket.emit('logInResponse', { success: false });
+            });
     });
 
     socket.on('signUp', data => {
@@ -79,6 +86,11 @@ io.sockets.on('connection', socket => {
                 console.log('Client signed up');
             });
     });
+    socket.on('changeGun', data => {
+        let player = Player.getPlayerBySocketId(socket.id);
+        player.changeGun(data.name);
+    });
+
 
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id];

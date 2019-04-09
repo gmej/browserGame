@@ -3,20 +3,18 @@ let Entity = require('./Entity');
 var Player = require('./Player');
 
 class Bullet extends Entity {
-    constructor(parentId, angle, parent) {
-        super();
-        this.id = Math.random();
-        this.speed = 10;
+    constructor(parent, angle, speed = 10) {
+        super(Math.random(), parent.x, parent.y);
+        this.speed = speed;;
         this.timer = 0;
-        this.parentId = parentId;
         this.parent = parent;
+        this.parentId = parent.id;
         this.xSpeed = this.speed * Math.cos(angle);
         this.ySpeed = this.speed * Math.sin(angle);
         this.toRemove = false;
         Bullet.list[this.id] = this;
     }
 }
-
 Bullet.list = {};
 
 Bullet.update = function (playerList) {

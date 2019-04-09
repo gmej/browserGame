@@ -1,18 +1,20 @@
 let Entity = require('./Entity');
 var Bullet = require('./Bullet');
-//console.log('aaaaa', Bullet.toString());
 var guns = {
     shotgun: {
         name: 'shotgun',
-        period: 5
+        period: 15,
+        bulletSpeed: 10
     },
     minigun: {
         name: 'minigun',
-        period: 0
+        period: 0,
+        bulletSpeed: 10
     },
     sniper: {
         name: 'sniper',
-        period: 15
+        period: 25,
+        bulletSpeed: 30
     }
 }
 
@@ -22,13 +24,12 @@ selectRandomGun = () => {
 }
 
 class Player extends Entity {
-    constructor(id) {
+    constructor(id, socketId) {
         super();
         this.id = id;
         this.number = "" + Math.floor(10 * Math.random());
         this.gun = selectRandomGun();
-        this.bulletCounter = this.gun.period;
-        console.log(this.gun);
+        this.bulletCounter = 0;
         this.pressingDown = false;
         this.pressingLeft = false;
         this.pressingRight = false;
@@ -61,6 +62,7 @@ class Player extends Entity {
             this.xSpeed = 0;
     }
 
+
     updatePlayer() {
         this.updateSpeed();
         super.updateEntity();
@@ -78,15 +80,35 @@ class Player extends Entity {
     }
 
     shootBullet(angle) {
-        let bullet = new Bullet(this.id, angle, this);
-        bullet.x = this.x;
-        bullet.y = this.y;
+        switch (this.gun.name) {
+            case 'shotgun':
+                new Bullet(this, angle, this.gun.bulletSpeed);
+                new Bullet(this, angle - 0.35, this.gun.bulletSpeed);
+                new Bullet(this, angle + 0.35, this.gun.bulletSpeed);
+                break;
+
+            default:
+                new Bullet(this, angle, this.gun.bulletSpeed);
+                break;
+        }
     }
 
+    changeGun(name) {
+        this.gun = guns[name];
+        this.bulletCounter = guns[name].period;
+        Player.list[this.id] = this;
+    }
 
 }
 
 Player.list = {};
+
+Player.getPlayerBySocketId = function (id) {
+    for (let player in Player.list) {
+        if (player == id)
+            return Player.list[player];
+    }
+}
 
 Player.getList = function () {
     return Player.list;
@@ -135,4 +157,6 @@ Player.update = function () {
     }
     return packet;
 }
+
+
 module.exports = Player; 

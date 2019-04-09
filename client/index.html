@@ -18,6 +18,11 @@
     <form id="chat-form" autocomplete="off">
         <input id="chat-input" type="text" style="width: 500px"></input>
     </form>
+    <div id="select-gun">
+            <button id="Shotgun">Shotgun</button><br>
+            <button id="Sniper">Sniper</button><br>
+            <button id="Minigun">Minigun</button>
+    </div>
 </div>
 
 <!-- TODO-->
@@ -50,6 +55,26 @@
     var numPlayer = document.getElementById('number');
     var ctx = document.getElementById('ctx').getContext('2d');
     ctx.font = '30px Arial';
+
+    var shotgun = document.getElementById('Shotgun');
+    var sniper = document.getElementById('Sniper');
+    var minigun = document.getElementById('Minigun');
+
+    shotgun.onclick = function () {
+        socket.emit('changeGun', {
+            name: 'shotgun'
+        });
+    }
+    sniper.onclick = function () {
+        socket.emit('changeGun', {
+            name: 'sniper'
+        });
+    }
+    minigun.onclick = function () {
+        socket.emit('changeGun', {
+            name: 'minigun'
+        });
+    }
 
     const CANVAS_WIDTH = 1000;
     const CANVAS_HEIGTH = 500;
