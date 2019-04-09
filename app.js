@@ -16,6 +16,11 @@ console.log('Server started.');
 
 var SOCKET_LIST = {};
 
+//
+// WARNING !!!
+//
+var DEBUG = true;
+
 var io = require('socket.io')(server);
 io.sockets.on('connection', socket => {
     socket.id = Math.random();
@@ -32,13 +37,22 @@ io.sockets.on('connection', socket => {
     });
 
     socket.on('sendMsgToServer', data => {
-        console.log('data', data);
-        console.log('recieved sendMsgToServer');
         console.log(`[CHAT] ${data.id} says: ${data.msg}`);
         var playerName = "" + data.id;
         for(let i in SOCKET_LIST) {
             SOCKET_LIST[i].emit('addToChat', playerName + ': ' + data.msg);
         }
+    });
+
+    socket.on('evalServer', data => {
+        if(!DEBUG) 
+            return;
+            try {
+                var res = eval(data);
+            } catch (error) {
+                console.log('[CHAT ERROR]');
+            }
+        socket.emit('evalAnswer', res);
     });
     
 
@@ -47,9 +61,10 @@ io.sockets.on('connection', socket => {
 
 
 setInterval(() => {
+
     let packet = {
         player: Player.update(),
-        bullet: Bullet.update(),
+        bullet: Bullet.update(Player.getList()),
     }
     for (let i in SOCKET_LIST) {
         var socket = SOCKET_LIST[i];
@@ -57,3 +72,7 @@ setInterval(() => {
         
     }
 }, 1000 / 25);
+
+module.exports.data = {
+    
+}

@@ -1,4 +1,4 @@
-<canvas id='ctx' width="500" height="500" style="border: 1px solid black"></canvas> <br>
+<canvas id='ctx' width="1000" height="500" style="border: 1px solid black"></canvas> <br>
 You are number:<p id="number">
 </p>
 <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
@@ -6,7 +6,7 @@ You are number:<p id="number">
 </div>
 
 <form id="chat-form" autocomplete="off">
-    <input id="chat-input" type="text"   style="width: 500px"></input>
+    <input id="chat-input" type="text" style="width: 500px"></input>
 </form>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js'></script>
 <script>
@@ -17,7 +17,13 @@ You are number:<p id="number">
     var ctx = document.getElementById('ctx').getContext('2d');
     ctx.font = '30px Arial';
 
+    const CANVAS_WIDTH = 1000;
+    const CANVAS_HEIGTH = 500;
+
+
     var socket = io();
+    let selfPlayer = {};
+
 
     var happy = function () {
         socket.emit('happy', {
@@ -29,15 +35,20 @@ You are number:<p id="number">
         console.log(counter++);
         console.log(conf);
         document.getElementById("number").innerHTML = conf.number;
+        selfPlayer.number = conf.number;
+        console.log('selfPlayer.number :', selfPlayer.number);
     })
 
     socket.on('newPosition', function (data) {
-        ctx.clearRect(0, 0, 500, 500);
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGTH);
         for (var i = 0; i < data.player.length; i++) {
+            selfPlayer.x = data.player[i].x;
+            selfPlayer.y = data.player[i].y;
             ctx.fillText(data.player[i].number, data.player[i].x, data.player[i].y);
         }
 
         for (var i = 0; i < data.bullet.length; i++) {
+            ctx.fillStyle = "green";
             ctx.fillRect(data.bullet[i].x, data.bullet[i].y - 5, 10, 10);
         }
     });
@@ -45,15 +56,29 @@ You are number:<p id="number">
     socket.on('addToChat', data => {
         chatText.innerHTML += '<div>' + data + '</div>';
     });
+    socket.on('evalAnswer', data => {
+        if (data == null) {
+            console.log('code error');
+        } else {
+            console.log(data);
+        }
+    });
 
-    chatForm.onsubmit = function(event) {
+    chatForm.onsubmit = function (event) {
         console.log('onsubmit');
         event.preventDefault();
+
         let packet = {
             msg: chatInput.value,
             id: numPlayer.innerHTML
         };
-        socket.emit('sendMsgToServer', packet);
+
+        if (packet.msg[0] == '/') {
+            'a'.slice()
+            socket.emit('evalServer', packet.msg.slice(1));
+        } else {
+            socket.emit('sendMsgToServer', packet);
+        }
         chatInput.value = '';
     }
 
@@ -83,4 +108,18 @@ You are number:<p id="number">
             socket.emit('keyPress', { inputId: 'up', state: false });
     }
 
+    document.onmousedown = function (event) {
+        socket.emit('keyPress', { inputId: 'attack', state: true });
+    }
+
+    document.onmouseup = function (event) {
+        socket.emit('keyPress', { inputId: 'attack', state: false });
+    }
+
+    document.onmousemove = function (event) {
+        let x = -selfPlayer.x + event.clientX - 8;
+        let y = -selfPlayer.y + event.clientY - 8;
+        let angle = Math.atan2(y, x);
+        socket.emit('keyPress', { inputId: 'mouseAngle', state: angle });
+    }
 </script>
